@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
         val deviceSensors: List<Sensor> = sensorManager.getSensorList(Sensor.TYPE_ALL)
         val listTv = findViewById<ListView>(R.id.sensorsLv)
         val gameBtn = findViewById<Button>(R.id.gameBtn)
+        val gpsBtn = findViewById<Button>(R.id.gpsBtn)
 
 
         val listItems = arrayOfNulls<String>(deviceSensors.size)
@@ -47,6 +48,11 @@ class MainActivity : AppCompatActivity() {
 
         gameBtn.setOnClickListener {
             val intent = Intent(this, BallGame::class.java)
+            startActivity(intent)
+        }
+
+        gpsBtn.setOnClickListener {
+            val intent = Intent(this, Gps::class.java)
             startActivity(intent)
         }
     }
