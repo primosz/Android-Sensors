@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Android_Sensors</string>
+    <string name="listTitle">Available sensors:</string>
+    <string name="game">Go to game</string>
 </resources>
