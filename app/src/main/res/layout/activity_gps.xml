@@ -8,24 +8,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/btn_start_upds"
-        android:layout_width="match_parent"
-        android:layout_marginRight="12dp"
-        android:layout_marginLeft="12dp"
-        android:layout_marginTop="24dp"
-        android:layout_height="wrap_content"
-        android:text="Start Location UPDates" />
-    <Button
-        android:enabled="false"
-        android:id="@+id/btn_stop_upds"
-        android:layout_width="match_parent"
-        android:layout_marginRight="12dp"
-        android:layout_marginLeft="12dp"
-        android:layout_height="wrap_content"
-        android:text="Stop Location UPDates" />
-
-
     <TextView
         android:padding="12dp"
         android:layout_marginTop="12dp"
@@ -55,6 +37,17 @@
         android:layout_marginLeft="12dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/txtTime" />
+        android:id="@+id/statusTv" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/map" />
 
 </LinearLayout>

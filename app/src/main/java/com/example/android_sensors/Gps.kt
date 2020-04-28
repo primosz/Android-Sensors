@@ -4,36 +4,33 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 class Gps : AppCompatActivity() {
     private var mFusedLocationProviderClient: FusedLocationProviderClient? = null
-    private val INTERVAL: Long = 2000
-    private val FASTEST_INTERVAL: Long = 1000
+    private val locationInterval: Long = 2000
+    private val locationFastestInterval: Long = 1000
     lateinit var mLastLocation: Location
-    internal lateinit var mLocationRequest: LocationRequest
+    private lateinit var mLocationRequest: LocationRequest
     private val REQUEST_PERMISSION_LOCATION = 10
+    private var outsideArea: Boolean = false
 
-    lateinit var btnStartupdate: Button
-    lateinit var btnStopUpdates: Button
-    lateinit var txtLat: TextView
-    lateinit var txtLong: TextView
-    lateinit var txtTime: TextView
+    lateinit var latTv: TextView
+    lateinit var longTv: TextView
+    lateinit var statusTv: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,64 +38,43 @@ class Gps : AppCompatActivity() {
 
         mLocationRequest = LocationRequest()
 
-        btnStartupdate = findViewById(R.id.btn_start_upds)
-        btnStopUpdates = findViewById(R.id.btn_stop_upds)
-        txtLat = findViewById(R.id.txtLat);
-        txtLong = findViewById(R.id.txtLong);
-        txtTime = findViewById(R.id.txtTime);
+        latTv = findViewById(R.id.txtLat);
+        longTv = findViewById(R.id.txtLong);
+        statusTv = findViewById(R.id.statusTv);
+        statusTv.text = getString(R.string.inNe)
+        statusTv.setTextColor(Color.GREEN)
 
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             buildAlertMessageNoGps()
         }
-
-
-        btnStartupdate.setOnClickListener {
-            if (checkPermissionForLocation(this)) {
-                startLocationUpdates()
-                btnStartupdate.isEnabled = false
-                btnStopUpdates.isEnabled = true
-            }
-        }
-
-        btnStopUpdates.setOnClickListener {
-            stoplocationUpdates()
-            txtTime.text = "Updates Stoped"
-            btnStartupdate.isEnabled = true
-            btnStopUpdates.isEnabled = false
-        }
-
     }
 
      override fun onResume(){
          super.onResume()
          if (checkPermissionForLocation(this)) {
              startLocationUpdates()
-             btnStartupdate.isEnabled = false
-             btnStopUpdates.isEnabled = true
-             Toast.makeText(this, "Listening to location", Toast.LENGTH_SHORT).show()
+             Toast.makeText(this, getString(R.string.listening), Toast.LENGTH_SHORT).show()
          }
      }
 
     override fun onPause(){
         super.onPause()
         stoplocationUpdates()
-        txtTime.text = "Updates Stoped"
-        btnStartupdate.isEnabled = true
-        btnStopUpdates.isEnabled = false
-        Toast.makeText(this, "Listening to location stopped", Toast.LENGTH_SHORT).show()
+        statusTv.text = getString(R.string.stopped)
+        Toast.makeText(this, getString(R.string.stoppedListening), Toast.LENGTH_SHORT).show()
     }
 
     private fun buildAlertMessageNoGps() {
 
         val builder = AlertDialog.Builder(this)
-        builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
+        builder.setMessage(getString(R.string.enableGpsQ))
             .setCancelable(false)
-            .setPositiveButton("Yes") { dialog, id ->
+            .setPositiveButton(getString(R.string.y)) { _, _ ->
                 startActivityForResult(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                     , 11)
             }
-            .setNegativeButton("No") { dialog, id ->
+            .setNegativeButton(getString(R.string.n)) { dialog, _ ->
                 dialog.cancel()
                 finish()
             }
@@ -108,8 +84,8 @@ class Gps : AppCompatActivity() {
 
     protected fun startLocationUpdates() {
         mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        mLocationRequest!!.interval = INTERVAL
-        mLocationRequest!!.fastestInterval = FASTEST_INTERVAL
+        mLocationRequest!!.interval = locationInterval
+        mLocationRequest!!.fastestInterval = locationFastestInterval
         val builder = LocationSettingsRequest.Builder()
         builder.addLocationRequest(mLocationRequest!!)
         val locationSettingsRequest = builder.build()
@@ -134,11 +110,29 @@ class Gps : AppCompatActivity() {
 
     fun onLocationChanged(location: Location) {
         mLastLocation = location
-        val date: Date = Calendar.getInstance().time
-        val sdf = SimpleDateFormat("hh:mm:ss a")
-        txtTime.text = "Updated at : " + sdf.format(date)
-        txtLat.text = "LATITUDE : " + mLastLocation.latitude
-        txtLong.text = "LONGITUDE : " + mLastLocation.longitude
+        latTv.text = "Latitude : ${mLastLocation.latitude}"
+        longTv.text = "Longitude : ${mLastLocation.longitude}"
+        checkIfOutOfArea()
+    }
+
+    private fun checkIfOutOfArea() {
+        if (mLastLocation.latitude < 51.101839 || mLastLocation.latitude > 51.103616
+            || mLastLocation.longitude < 17.011037 || mLastLocation.longitude > 17.014430){
+            if(!outsideArea){
+                Toast.makeText(this, getString(R.string.leftNe), Toast.LENGTH_SHORT).show()
+                outsideArea = true
+                statusTv.text = getString(R.string.outOfNe)
+                statusTv.setTextColor(Color.RED)
+            }
+        }
+        else {
+            if(outsideArea) {
+                Toast.makeText(this, getString(R.string.backInNe), Toast.LENGTH_SHORT).show()
+                outsideArea = false
+                statusTv.text = getString(R.string.inNe)
+                statusTv.setTextColor(Color.GREEN)
+            }
+        }
     }
 
     private fun stoplocationUpdates() {
@@ -150,15 +144,13 @@ class Gps : AppCompatActivity() {
         if (requestCode == REQUEST_PERMISSION_LOCATION) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startLocationUpdates()
-                btnStartupdate.isEnabled = false
-                btnStopUpdates.isEnabled = true
             } else {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.denied), Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    fun checkPermissionForLocation(context: Context): Boolean {
+    private fun checkPermissionForLocation(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
             if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==

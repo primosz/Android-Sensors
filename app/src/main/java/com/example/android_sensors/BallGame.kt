@@ -1,6 +1,5 @@
 package com.example.android_sensors
 
-
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
@@ -13,14 +12,12 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NavUtils
 
 
 class BallGame : AppCompatActivity(), SensorEventListener {
-
 
     private var xPos: Float = 0.0f
     private var xAccel: Float = 0.0f
@@ -34,16 +31,14 @@ class BallGame : AppCompatActivity(), SensorEventListener {
     internal lateinit var ball: Bitmap
     private lateinit var sensorManager: SensorManager
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestedOrientation =  (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
-        val ballView = BallView(this)
+        val ballView = Ball(this)
         setContentView(ballView)
 
-        var size = Point()
-        var screenDisplay = windowManager.defaultDisplay
+        val size = Point()
+        val screenDisplay = windowManager.defaultDisplay
         screenDisplay.getSize(size)
         xMax = size.x.toFloat() - 100
         yMax = size.y.toFloat() - 220
@@ -51,14 +46,11 @@ class BallGame : AppCompatActivity(), SensorEventListener {
         yPos = size.y.toFloat()/2
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-
     }
-
 
     override fun onStart() {
         super.onStart()
-
-        sensorManager!!.registerListener(
+        sensorManager.registerListener(
             this,
             sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
             SensorManager.SENSOR_DELAY_GAME
@@ -74,32 +66,17 @@ class BallGame : AppCompatActivity(), SensorEventListener {
         if (sensorEvent.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             xAccel = sensorEvent.values[0]
             yAccel = -sensorEvent.values[1]
-            updateBall()
+            updateBallPosition()
         }
     }
 
-    private fun updateBall() {
-        val frameTime = 0.666f
-        xVel += xAccel * frameTime
-        yVel += yAccel * frameTime
-        val xS = xVel / 2 * frameTime
-        val yS = yVel / 2 * frameTime
-        xPos -= xS
-        yPos -= yS
-        if (xPos > xMax) {
-           // xPos = xMax
-            gameOver()
-        } else if (xPos < 0) {
-            //xPos = 0f
-            gameOver()
-        }
-        if (yPos > yMax) {
-           // yPos = yMax
-            gameOver()
-        } else if (yPos < 0) {
-            //yPos = 0f
-            gameOver()
-        }
+    private fun updateBallPosition() {
+        val refreshRate = 0.6f
+        xVel += xAccel * refreshRate
+        yVel += yAccel * refreshRate
+        xPos -= xVel / 2 * refreshRate
+        yPos -= yVel / 2 * refreshRate
+        if (xPos > xMax || yPos > yMax || xPos < 0 || yPos < 0)  gameOver()
     }
 
     private fun gameOver() {
@@ -107,12 +84,11 @@ class BallGame : AppCompatActivity(), SensorEventListener {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Game over!")
         builder.setMessage("Do you want to try again?")
-
-        builder.setPositiveButton(android.R.string.yes) { dialog, which ->
+        builder.setPositiveButton(android.R.string.yes) { _, _ ->
             this.recreate()
         }
 
-        builder.setNegativeButton(android.R.string.no) { dialog, which ->
+        builder.setNegativeButton(android.R.string.no) { _, _ ->
             NavUtils.navigateUpFromSameTask(this)
         }
         builder.show()
@@ -120,7 +96,7 @@ class BallGame : AppCompatActivity(), SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, i: Int) {}
 
-    inner class BallView(context: Context?) : View(context) {
+    inner class Ball(context: Context?) : View(context) {
          override fun onDraw(canvas: Canvas) {
             canvas.drawBitmap(ball, xPos, yPos, null)
             invalidate()

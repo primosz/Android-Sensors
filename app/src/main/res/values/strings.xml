@@ -3,4 +3,15 @@
     <string name="listTitle">Available sensors:</string>
     <string name="game">Go to game</string>
     <string name="gps">GPS</string>
+    <string name="stopped">Updates Stopped</string>
+    <string name="listening">Listening to location</string>
+    <string name="stoppedListening">Listening to location stopped</string>
+    <string name="enableGpsQ">Your GPS seems to be disabled, do you want to enable it?</string>
+    <string name="y">Yes</string>
+    <string name="n">No</string>
+    <string name="leftNe">You\'ve left your neighborhood!</string>
+    <string name="outOfNe">You are out of your neighborhood!</string>
+    <string name="backInNe">You\'re back in your neighborhood!</string>
+    <string name="inNe">You are in your neighborhood</string>
+    <string name="denied">Permission Denied</string>
 </resources>
